@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import get_user_model, authenticate
 
 User = get_user_model()
 
@@ -18,6 +19,47 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         user.generate_otp()
         return user
+
+
+class RegisterSerializerr(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'password']
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
+    
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    
+    def validate(self, data):
+        # Get user by email
+        user = User.objects.filter(email=data['email']).first()
+        print(user)
+
+        if user is None:
+            raise serializers.ValidationError("Invalid credentials")
+
+        # Authenticate using username (Django default)
+        authenticated_user = authenticate(username=user.first_name, password=data['password'])
+
+        if authenticated_user is None:
+            raise serializers.ValidationError("Invalid credentials")
+
+        # Generate JWT tokens
+        tokens = RefreshToken.for_user(user)
+        return {
+            'refresh': str(tokens),
+            'access': str(tokens.access_token),
+        }
+
+    
 
 class RequestOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()

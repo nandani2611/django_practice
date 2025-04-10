@@ -38,10 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'authentication',  # Custom authentication app
+    'authentication',
     'corsheaders',
+    'rest_framework',
+    'rest_framework_simplejwt',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -132,6 +134,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
+
 
 AUTH_USER_MODEL = 'authentication.User'
 

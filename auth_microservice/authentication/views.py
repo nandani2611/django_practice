@@ -4,15 +4,15 @@ from django.shortcuts import render
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer, OTPLoginSerializer, PasswordResetSerializer, PasswordUpdateSerializer, UserSerializer, RequestOTPSerializer
+from .serializers import RegisterSerializer, OTPLoginSerializer, PasswordResetSerializer, PasswordUpdateSerializer, UserSerializer, RequestOTPSerializer, RegisterSerializerr, LoginSerializer
 
 User = get_user_model()
 
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = RegisterSerializer
+# class RegisterView(generics.CreateAPIView):
+#     queryset = User.objects.all()
+#     serializer_class = RegisterSerializer
 
 class OTPLoginView(APIView):
     def post(self, request):
@@ -62,3 +62,26 @@ class AccountUpdateView(generics.UpdateAPIView):
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
+
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializerr
+    permission_classes = [AllowAny]
+
+
+class LoginView(generics.GenericAPIView):
+    serializer_class = LoginSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+class ProtectedView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        return Response({"message": "You have access to this protected view!"})
